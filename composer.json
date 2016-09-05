@@ -1,0 +1,15 @@
+{
+    "autoload": {
+        "psr-4": {"TestTask\\": "src/"}
+    },
+    "name": "dilistinc/test_task",
+    "type": "project",
+    "authors": [
+        {
+            "name": "dorian",
+            "email": "melnyk.dmitro@gmail.com"
+        }
+    ],
+    "minimum-stability": "dev",
+    "require": {}
+}

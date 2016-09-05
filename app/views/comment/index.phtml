@@ -1,0 +1,170 @@
+<?php
+
+use TestTask\Model\Admin;
+use TestTask\Model\Comment;
+
+/**
+ * @var $message string
+ * @var $token string
+ * @var $new_comment Comment
+ * @var $comments Comment[]
+ */
+
+?>
+
+<?php
+
+if ($comments):
+
+?>
+
+<div class="dropdown">
+    <button class="btn btn-default dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+        Sort
+        <span class="caret"></span>
+    </button>
+    <ul class="dropdown-menu" aria-labelledby="dropdownMenu1">
+        <li><a href="/?sort=<?= Comment::SORT_DATE ?>">By date</a></li>
+        <li><a href="/?sort=<?= Comment::SORT_NAME ?>">By name</a></li>
+        <li><a href="/?sort=<?= Comment::SORT_EMAIL ?>">By email</a></li>
+    </ul>
+</div>
+
+<br>
+
+<?php
+
+foreach ($comments as $comment):
+
+?>
+    <div class="panel panel-default">
+        <div class="panel-body">
+        <label>Name: </label>
+        <p><?= $comment->name ?></p>
+        <label>Email: </label>
+        <p><?= $comment->email ?></p>
+        <label>Created at: </label>
+        <p><?= $comment->created_at ?></p>
+        <label>Contenet: </label>
+        <p><?= $comment->content ?></p>
+
+        <?php
+
+        $image = $comment->getImage();
+        if ($image):
+
+        ?>
+
+            <img src="<?= $image ?>">
+
+        <?php endif; ?>
+
+        <?php if (Admin::isLogined()): ?>
+            <a href="/edit?id=<?= $comment->id ?>">Edit</a>
+
+            <?php if ($comment->isChecked()): ?>
+                <h3>Moderate</h3>
+                <a href="/approve?id=<?= $comment->id ?>">Approve</a>
+                <a href="/refuse?id=<?= $comment->id ?>">Refuse</a>
+            <?php else: ?>
+                <p><?php if ($comment->moderate == Comment::MODERATE_APPROVED): ?>Approved<?php else: ?>Refused<?php endif; ?></p>
+            <?php endif; ?>
+        <?php endif; ?>
+
+        <?php if ($comment->updated_by_admin): ?>
+            <p>Updated by admin</p>
+        <?php endif; ?>
+        </div>
+    </div>
+<?php
+
+endforeach;
+
+else:
+
+?>
+
+<h2>Comments not found</h2>
+
+<?php endif; ?>
+
+<h2>Add new comment</h2>
+
+<?php if ($message): ?>
+    <div class="alert alert-warning">
+        <?= $message ?>
+    </div>
+<?php endif; ?>
+
+<form class="form-signin" enctype="multipart/form-data" method="POST" action="/">
+    <label for="name">Name</label>
+    <input class="form-control" type="text" name="name" value="<?= $new_comment->name ?>">
+
+    <br>
+    <label for="name">Email</label>
+    <input class="form-control" type="text" name="email" value="<?= $new_comment->email ?>">
+
+    <br>
+    <label for="name">Content</label>
+    <textarea class="form-control" name="content"><?= $new_comment->content ?></textarea>
+
+    <br>
+
+    Image: <input name="image" type="file" />
+
+    <br>
+
+    <input type="hidden" name="token" value="<?= $token ?>">
+
+    <button id="preview" class="btn btn-lg btn-primary btn-block" type="button">Preview</button>
+
+    <br>
+
+    <button class="btn btn-lg btn-primary btn-block" type="submit">Create</button>
+</form>
+
+<div id="previewModal" class="modal fade" role="dialog">
+    <div class="modal-dialog">
+
+        <!-- Modal content-->
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h4 class="modal-title">Preview</h4>
+            </div>
+            <div class="modal-body"></div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<?php $line_scripts = <<<EOD
+
+$(document).ready(function() {
+    $('#preview').click(function() {
+        var data = $(this).closest('form').serializeArray().reduce(function(obj, item) {
+            obj[item.name] = item.value;
+            return obj;
+        }, {});
+        var modal = $('#previewModal');
+        var html = '<div class="panel panel-default">' +
+        '<div class="panel-body">' +
+        '<label>Name: </label>' +
+        '<p>' + data.name + '</p>' +
+        '<label>Email: </label>' +
+        '<p>' + data.email + '</p>' +
+        '<label>Created at: </label>' +
+        '<p>' + new Date().toLocaleString() + '</p>' +
+        '<label>Content: </label>' +
+        '<p>' + data.content + '</p>';
+        modal.html(html);
+        modal.modal('show');
+    });
+});
+
+EOD;
+
+?>
